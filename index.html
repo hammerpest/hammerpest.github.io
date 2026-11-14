@@ -1,9 +1,16 @@
 <!doctype html>
 <html lang="en-AU">
-<!-- Swim Opt 2.21: onlinecarnivals.au landing page (design D, The Track). Swim Opt 2.27: the runner dot crosses a finish line (S1.47 B, decision 185). Lives at the root of the site: links are relative (swimming/, athletics/, crosscountry/). -->
+<!-- Web Opt 1.0 (design S1.48): onlinecarnivals.au is a school sign-in page. After signing in, the carnival organiser sees
+     the landing page lanes as before, with one Sign in button per carnival (staff link). Version 2: no cursor halo.
+     Version 4: the sign-in panel has the runner dot and finish line too.
+     Version 3: no Results buttons; the parents links stay in the table and never reach this page. The links are not in this page: they come from the
+     web_links table in Supabase, which only signed-in school accounts can read (row-level security).
+     Look: Swim Opt 2.21 landing page (design D, The Track) and S1.47 B runner dot.
+     Test mode: ?mode=local (this device only, made-up school and example.test links; password "carnival"). -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
 <title>Online Carnivals</title>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;900&family=Red+Hat+Mono:wght@500;700&family=Red+Hat+Text:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -11,30 +18,52 @@
   --navy:#1d3160; --yellow:#ffc907;
   --bg:#0b1226; --ink:#ffffff; --muted:#b9c2de; --line:rgba(255,255,255,.28);
   --l1:#1f5fbf; --l2:#d4a300; --l3:#1a8a4a;
-  --ticker:#ffc907; --tickink:#14203f;
+  --ticker:#ffc907; --tickink:#14203f; --bad:#ff8a80; --inline:rgba(255,255,255,.5);
 }
 :root[data-theme="light"]{
   --bg:#f3f5fb; --ink:#14203f; --muted:#4a5573; --line:rgba(20,32,63,.3);
-  --l1:#1f5fbf; --l2:#b8920a; --l3:#15783e;
+  --l1:#1f5fbf; --l2:#b8920a; --l3:#15783e; --bad:#b3261e; --inline:rgba(20,32,63,.55);
 }
 *{box-sizing:border-box}
 html,body{margin:0}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font:400 17px/1.5 "Red Hat Text",system-ui,sans-serif;overflow-x:hidden;height:100dvh;display:flex;flex-direction:column;overflow-y:auto}
-.ticker{background:var(--ticker);color:var(--tickink);overflow:hidden;white-space:nowrap;font:700 14px/36px "Red Hat Mono",ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase}
+.ticker{background:var(--ticker);color:var(--tickink);overflow:hidden;white-space:nowrap;font:700 14px/36px "Red Hat Mono",ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
 .ticker div{display:inline-block;padding-left:100%;animation:tick 40s linear infinite}
 @keyframes tick{to{transform:translateX(-100%)}}
-.bar{display:flex;justify-content:space-between;align-items:center;padding:6px 20px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 20px;flex-shrink:0}
 .brand{font:900 18px "Red Hat Display",sans-serif;letter-spacing:.5px}
 .brand span{color:var(--yellow)}
 :root[data-theme="light"] .brand span{color:#8a6c00}
-.theme{min-height:48px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:transparent;color:var(--ink);font:700 15px "Red Hat Display",sans-serif;cursor:pointer}
-.hero{padding:4px 20px 12px;max-width:1200px;width:100%;margin:0 auto}
+.tools{display:flex;gap:8px}
+.theme{min-height:48px;padding:0 16px;white-space:nowrap;border-radius:12px;border:2px solid var(--line);background:transparent;color:var(--ink);font:700 15px "Red Hat Display",sans-serif;cursor:pointer}
+.hero{padding:4px 20px 12px;max-width:1200px;width:100%;margin:0 auto;flex-shrink:0}
+.hero h1:focus{outline:none}
 .hero h1{font:900 clamp(40px,min(13vw,15vh),150px)/.86 "Red Hat Display",sans-serif;margin:0;text-transform:uppercase;letter-spacing:-.03em}
 .hero h1 .o{color:transparent;-webkit-text-stroke:2px var(--ink)}
 .hero h1 .y{color:var(--yellow)}
 :root[data-theme="light"] .hero h1 .y{color:#8a6c00}
 .hero p{max-width:60ch;color:var(--muted);margin:10px 0 0;font-size:clamp(14px,2.2vh,19px)}
 .track{max-width:1200px;width:100%;margin:0 auto;padding:0 20px 8px;flex:1 1 auto;position:relative;z-index:1;display:flex;flex-direction:column}
+.b{display:flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:12px;font:900 16px "Red Hat Display",sans-serif;text-decoration:none;white-space:nowrap;cursor:pointer;border:0}
+.b.p{background:var(--yellow);color:#14203f}
+.b.s{border:2px solid var(--line);color:var(--ink);background:transparent}
+.b:focus-visible,.theme:focus-visible,.in:focus-visible{outline:3px solid #8db6ff;outline-offset:2px}
+:root[data-theme="light"] .b:focus-visible,:root[data-theme="light"] .theme:focus-visible,:root[data-theme="light"] .in:focus-visible{outline-color:#1d3160}
+
+/* Sign in (S1.48 A): one lane holds the form */
+.gate{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:20px 40px;align-items:start;padding:20px 28px 44px 20px;border-top:3px dashed var(--line);border-bottom:3px dashed var(--line);opacity:0;transform:translateX(-40px);animation:in .6s cubic-bezier(.2,.8,.2,1) forwards}
+.gate h2,.msg h2{font:900 clamp(26px,min(5.5vw,7vh),60px)/1 "Red Hat Display",sans-serif;margin:0;text-transform:uppercase;letter-spacing:-.01em}
+.gate .note,.msg p{margin:10px 0 0;color:var(--muted);font:500 15px "Red Hat Mono",ui-monospace,monospace;max-width:44ch}
+form{display:flex;flex-direction:column;gap:12px}
+label{font:700 15px "Red Hat Display",sans-serif}
+.in{display:block;width:100%;min-height:48px;margin-top:4px;padding:0 14px;border-radius:12px;border:2px solid var(--inline);background:transparent;color:var(--ink);font:400 17px "Red Hat Text",sans-serif}
+.err{min-height:24px;margin:0;color:var(--bad);font:700 15px "Red Hat Display",sans-serif}
+.b[disabled]{opacity:.6;cursor:wait}
+.msg{padding:20px;border-top:3px dashed var(--line);border-bottom:3px dashed var(--line)}
+.msg .b{display:inline-flex;margin-top:16px}
+
+/* Signed in (S1.48 B, version 2): the landing page lanes as before (Swim Opt 2.21), buttons from web_links */
 .lane{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:20px;flex:1 1 0;min-height:104px;padding:8px 20px;margin:0;border-top:3px dashed var(--line);color:inherit;text-decoration:none;overflow:hidden;transition:flex-grow .35s ease;opacity:0;transform:translateX(-40px);animation:in .6s cubic-bezier(.2,.8,.2,1) forwards}
 .lane:last-child{border-bottom:3px dashed var(--line)}
 .lane:nth-child(2){animation-delay:.12s}.lane:nth-child(3){animation-delay:.24s}
@@ -45,11 +74,7 @@ body{background:var(--bg);color:var(--ink);font:400 17px/1.5 "Red Hat Text",syst
 .name h2{font:900 clamp(26px,min(5.5vw,7vh),60px)/1 "Red Hat Display",sans-serif;margin:0;text-transform:uppercase;letter-spacing:-.01em}
 .name p{margin:6px 0 0;color:var(--muted);font:500 15px "Red Hat Mono",ui-monospace,monospace}
 .cta{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:180px}
-.b{display:flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:12px;font:900 16px "Red Hat Display",sans-serif;text-decoration:none;white-space:nowrap}
-.b.p{background:var(--yellow);color:#14203f}
-.b.s{border:2px solid var(--line);color:var(--ink)}
 .runner{position:absolute;left:0;bottom:14px;width:18px;height:18px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(255,201,7,.25);z-index:1;transform:translateX(-30px)}
-/* S1.47 B: a chequered finish line at the end of each lane; the dot crosses it at speed (the line flashes) and fades off the edge */
 .finish{position:absolute;top:0;bottom:0;right:4px;width:12px;z-index:1;opacity:.7;pointer-events:none;
   background:repeating-conic-gradient(var(--ink) 0 25%,transparent 0 50%) 0 0/12px 12px;transition:opacity .2s}
 .finish.flash{opacity:1;background:repeating-conic-gradient(var(--yellow) 0 25%,transparent 0 50%) 0 0/12px 12px}
@@ -58,114 +83,208 @@ body{background:var(--bg);color:var(--ink);font:400 17px/1.5 "Red Hat Text",syst
 .lane:hover .no,.lane:focus-within .no{-webkit-text-stroke-color:#fff}
 .lane:hover .name h2,.lane:hover .name p,.lane:focus-within .name h2,.lane:focus-within .name p{color:#fff}
 .lane:hover .b.s,.lane:focus-within .b.s{border-color:#fff;color:#fff}
-.b:focus-visible,.theme:focus-visible{outline:3px solid #8db6ff;outline-offset:2px}
-:root[data-theme="light"] .b:focus-visible,:root[data-theme="light"] .theme:focus-visible{outline-color:#1d3160}
 .lane:focus-within .b:focus-visible{outline-color:#fff}
 .lane:nth-child(2):hover .no,.lane:nth-child(2):focus-within .no{-webkit-text-stroke-color:#14203f}
 .lane:nth-child(2):hover .name h2,.lane:nth-child(2):hover .name p,.lane:nth-child(2):hover .cd,.lane:nth-child(2):focus-within .name h2,.lane:nth-child(2):focus-within .name p,.lane:nth-child(2):focus-within .cd{color:#14203f}
 .lane:nth-child(2):hover .b.s,.lane:nth-child(2):focus-within .b.s{border-color:#14203f;color:#14203f}
 .lane:nth-child(2):focus-within .b:focus-visible{outline-color:#14203f}
-.foot{max-width:1200px;width:100%;margin:0 auto;padding:0 20px 10px;font-size:12px;color:var(--muted);font:500 14px "Red Hat Mono",ui-monospace,monospace}
+.foot{max-width:1200px;width:100%;margin:0 auto;padding:0 20px 10px;color:var(--muted);font:500 14px "Red Hat Mono",ui-monospace,monospace;flex-shrink:0}
 @media (max-width:720px){
-  .lane{grid-template-columns:auto 1fr;grid-template-areas:"no name" "cta cta";row-gap:12px;padding:8px 16px}
+  .bar{padding:6px 16px}
+  .brand{font-size:16px}
+  .theme{padding:0 12px}
+  .hero,.track,.foot{padding-left:16px;padding-right:16px}
+  .gate{grid-template-columns:1fr;padding:16px 28px 28px 6px}
   .hero p{display:none}
+  .lane{grid-template-columns:auto 1fr;grid-template-areas:"no name" "cta cta";row-gap:12px;padding:8px 16px;min-height:112px}
   .runner{bottom:2px;width:12px;height:12px}
   .no{grid-area:no}.name{grid-area:name}.cta{grid-area:cta;flex-direction:row}.cta .b{flex:1}
-  .lane{min-height:112px}
 }
-/* short screens: lanes never shrink below their full height; the page scrolls instead of cutting a button off */
-@media (max-height:760px){.lane{flex:1 0 auto}.ticker,.bar,.hero,.foot{flex-shrink:0}}
+@media (max-height:760px){.lane{flex:1 0 auto}}
 @media (prefers-reduced-motion:reduce){
   .ticker div{animation:none;padding-left:16px}
-  .lane{animation:none;opacity:1;transform:none}
+  .lane,.gate{animation:none;opacity:1;transform:none}
   .runner,.finish{display:none}
 }
 
 /* Effects */
 body::before{content:"";position:fixed;inset:-10%;pointer-events:none;z-index:50;opacity:.09;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");animation:grain .7s steps(4) infinite}
 @keyframes grain{25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
-body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(520px circle at var(--mx,50%) var(--my,25%),rgba(255,201,7,.14),transparent 62%)}
-:root[data-theme="light"] body::after{background:radial-gradient(520px circle at var(--mx,50%) var(--my,25%),rgba(31,95,191,.13),transparent 62%)}
 .hero h1{animation:wipe .9s cubic-bezier(.2,.8,.2,1) both}
 @keyframes wipe{from{clip-path:inset(0 100% 0 0);transform:skewX(-6deg) translateX(-20px)}to{clip-path:inset(0 0 0 0);transform:none}}
 .runner::after{content:"";position:absolute;right:100%;top:50%;height:3px;width:110px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,var(--yellow));border-radius:3px}
 .lane:hover .no,.lane:focus-within .no{animation:glitch .45s steps(2) 1}
 @keyframes glitch{0%{filter:drop-shadow(5px 0 #ff2d55) drop-shadow(-5px 0 #00e5ff)}40%{filter:drop-shadow(-4px 1px #ff2d55) drop-shadow(4px -1px #00e5ff);transform:translateX(2px)}70%{filter:drop-shadow(3px 0 #ff2d55) drop-shadow(-3px 0 #00e5ff)}100%{filter:none;transform:none}}
 .b{transition:transform .15s ease-out}
-.cd{color:var(--yellow)}
+.cd{color:var(--yellow);white-space:nowrap}
 :root[data-theme="light"] .cd{color:#8a6c00}
 .lane:hover .cd,.lane:focus-within .cd{color:#fff}
 @media (prefers-reduced-motion:reduce){body::before{animation:none}.hero h1{animation:none}.lane:hover .no,.lane:focus-within .no{animation:none}.b,.lane,.lane::before,.no{transition:none}}
 </style>
 </head>
 <body>
-<div class="ticker" aria-hidden="true"><div>Carnival season &nbsp;/&nbsp; Athletics: Friday 18 June 2027, Mingara Athletics Track &nbsp;/&nbsp; Staff sign in with your job PIN &nbsp;/&nbsp; Parents: results go live on the day &nbsp;/&nbsp; Bradman &nbsp;/&nbsp; Jackson &nbsp;/&nbsp; Newcombe &nbsp;/&nbsp;</div></div>
-<div class="bar"><div class="brand">ONLINE<span>CARNIVALS</span>.AU</div><button class="theme" id="t" type="button" aria-label="Light theme">Light</button></div>
+<div class="ticker" aria-hidden="true"><div id="tk">Online Carnivals &nbsp;/&nbsp; School sign in &nbsp;/&nbsp; Swimming &nbsp;/&nbsp; Athletics &nbsp;/&nbsp; Cross country &nbsp;/&nbsp; Staff and parents: your carnival organiser sends you your link &nbsp;/&nbsp;</div></div>
+<div class="bar"><div class="brand">ONLINE<span>CARNIVALS</span>.AU</div><div class="tools"><button class="theme" id="out" type="button" hidden>Sign out</button><button class="theme" id="t" type="button" aria-label="Light theme">Light</button></div></div>
 <section class="hero">
-  <h1>On <span class="o">your</span><br><span class="y">marks.</span></h1>
-  <p>Pick your lane. Three carnivals, one start line. Parents see live results. Staff run the day.</p>
+  <h1 tabindex="-1" id="h1">On <span class="o">your</span><br><span class="y">marks.</span></h1>
+  <p id="lead">Carnival organisers: sign in with your school's account.</p>
 </section>
-<main class="track">
-  <article class="lane go" style="--c:var(--l1)">
-    <div class="no" aria-hidden="true">1</div>
-    <div class="name"><h2>Swimming</h2><p>/swimming</p></div>
-    <div class="cta"><a class="b p" href="swimming/parents/">Results</a><a class="b s" href="swimming/">Staff sign in</a></div>
-    <span class="runner" aria-hidden="true"></span>
-  </article>
-  <article class="lane go" style="--c:var(--l2)">
-    <div class="no" aria-hidden="true">2</div>
-    <div class="name"><h2>Athletics</h2><p>/athletics &nbsp;&middot;&nbsp; Fri 18 June 2027 &nbsp;&middot;&nbsp; <span class="cd" id="cd"></span></p></div>
-    <div class="cta"><a class="b p" href="athletics/parents/">Results</a><a class="b s" href="athletics/">Staff sign in</a></div>
-    <span class="runner" aria-hidden="true"></span>
-  </article>
-  <article class="lane go" style="--c:var(--l3)">
-    <div class="no" aria-hidden="true">3</div>
-    <div class="name"><h2>Cross Country</h2><p>/crosscountry</p></div>
-    <div class="cta"><a class="b p" href="crosscountry/parents/">Results</a><a class="b s" href="crosscountry/">Staff sign in</a></div>
-    <span class="runner" aria-hidden="true"></span>
-  </article>
-</main>
-<div class="foot">Parents: Results. Staff: sign in with your job PIN.</div>
-<script>
-(function(){var r=document.documentElement,t=document.getElementById('t');
 
+<main class="track" id="signin" hidden>
+  <div class="gate">
+    <div>
+      <h2>School sign in</h2>
+      <p class="note">For carnival organisers. Staff and parents: your carnival organiser sends you your link.</p>
+    </div>
+    <form id="f" novalidate>
+      <div><label for="em">Email</label><input class="in" id="em" type="email" autocomplete="username" required></div>
+      <div><label for="pw">Password</label><input class="in" id="pw" type="password" autocomplete="current-password" required></div>
+      <p class="err" id="err" role="alert"></p>
+      <button class="b p" id="go" type="submit">Sign in</button>
+    </form>
+    <span class="runner" aria-hidden="true"></span><span class="finish" aria-hidden="true"></span>
+  </div>
+</main>
+
+<main class="track" id="msg" hidden>
+  <div class="msg"><h2 id="msgh">One moment</h2><p id="msgp">Checking your sign-in.</p><button class="b s" id="msgb" type="button" hidden>Sign out</button></div>
+</main>
+
+<main class="track" id="org" hidden></main>
+<div class="foot" id="foot">Accounts are made by Online Carnivals. There is no sign up.</div>
+
+<script>
+(function(){
+var r=document.documentElement,$=function(i){return document.getElementById(i)};
 var rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
 var fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
-/* countdown to athletics */
-(function(){var e=document.getElementById('cd');if(!e)return;
-var t=new Date(2027,5,18,8,0,0)-new Date();
-if(t<0){e.textContent='Race day';return}
-var d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5);
-e.textContent=d+' days '+h+' h to go'})();
-/* spotlight follows the pointer */
-if(fine&&!rm){addEventListener('pointermove',function(ev){r.style.setProperty('--mx',ev.clientX+'px');r.style.setProperty('--my',ev.clientY+'px')},{passive:true})}
-/* magnetic buttons */
-if(fine&&!rm){document.querySelectorAll('.b').forEach(function(b){
-b.addEventListener('pointermove',function(ev){var q=b.getBoundingClientRect();
-b.style.transform='translate('+((ev.clientX-q.left-q.width/2)*.18)+'px,'+((ev.clientY-q.top-q.height/2)*.28)+'px)'});
-b.addEventListener('pointerleave',function(){b.style.transform=''})})}
-/* name scramble */
-if(!rm){var C='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&';
+var q=new URLSearchParams(location.search),TEST=q.get('mode')==='local';
+/* Supabase project: ccas-athletics-staging (Sydney), shared with athletics and cross country. Only the public publishable key. */
+var CONFIG={url:"https://qgqsdhwcskpnvoqcedfi.supabase.co",key:"sb_publishable_C9Kzgf1tdREXRDGI_Jg_vQ_xGmWMhO5"};
+
+/* Test mode: this device only. A made-up school with example.test links; any email, password "carnival". */
+function testClient(){
+  var K='web_test_session',S=sessionStorage;
+  var data={web_schools:[{name:'Test School'}],web_links:[
+    {carnival:'swimming',sort:1,name:'Swimming',path_label:'/swimming',staff_url:'https://example.test/swimming/',event_date:'2027-02-03'},
+    {carnival:'athletics',sort:2,name:'Athletics',path_label:'/athletics',staff_url:'https://example.test/athletics/',event_date:'2027-06-18'},
+    {carnival:'crosscountry',sort:3,name:'Cross Country',path_label:'/crosscountry',staff_url:'https://example.test/crosscountry/',event_date:null}]};
+  if(q.get('noschool')==='1'){data.web_schools=[];data.web_links=[]}
+  if(q.get('signedin')==='1')S.setItem(K,'1');
+  function wait(v){return new Promise(function(ok){setTimeout(function(){ok(v)},250)})}
+  return {auth:{
+    getSession:function(){return Promise.resolve({data:{session:S.getItem(K)?{user:{}}:null}})},
+    signInWithPassword:function(c){if(c.password==='carnival'){S.setItem(K,'1');return wait({data:{session:{}},error:null})}
+      return wait({data:{},error:{status:400,message:'Invalid login credentials'}})},
+    signOut:function(){S.removeItem(K);return Promise.resolve({error:null})}},
+    from:function(t){var res={data:data[t].slice(),error:null};var o={select:function(){return o},order:function(){return o},then:function(a,b){return wait(res).then(a,b)}};return o}};
+}
+function realClient(){
+  return window.supabase.createClient(CONFIG.url,CONFIG.key,{auth:{storageKey:'web_auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+}
+
+function show(id){['signin','msg','org'].forEach(function(k){$(k).hidden=k!==id});$('out').hidden=id!=='org'}
+function message(h,p,signOut){$('msgh').textContent=h;$('msgp').textContent=p;$('msgb').hidden=!signOut;show('msg')}
+var TK0=$('tk').innerHTML;
+function signedOut(){show('signin');gateRun(1600,200);$('lead').textContent="Carnival organisers: sign in with your school's account.";$('tk').innerHTML=TK0;
+  $('foot').textContent='Accounts are made by Online Carnivals. There is no sign up.';$('org').innerHTML=''}
+
+var sb;
+function start(){
+  sb=TEST?testClient():realClient();
+  message('One moment','Checking your sign-in.');
+  sb.auth.getSession().then(function(r){if(r.data&&r.data.session)load();else signedOut()},function(){signedOut()});
+}
+
+$('f').addEventListener('submit',function(e){e.preventDefault();
+  var em=$('em').value.trim(),pw=$('pw').value,go=$('go'),err=$('err');
+  if(!em||!pw){err.textContent='Type your email and password.';(em?$('pw'):$('em')).focus();return}
+  err.textContent='';go.disabled=true;go.textContent='Signing in';
+  sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){
+    go.disabled=false;go.textContent='Sign in';
+    if(r.error){err.textContent=r.error.status===400?'That email and password do not match an account.':(r.error.status===429?'Too many tries. Wait a few minutes, then try again.':'No connection. Try again.');$('pw').select();return}
+    $('pw').value='';load();
+  },function(){go.disabled=false;go.textContent='Sign in';err.textContent='No connection. Try again.'});
+});
+function signOut(){function d(){signedOut();$('em').focus({preventScroll:true})}sb.auth.signOut().then(d,d)}
+$('out').onclick=signOut;$('msgb').onclick=signOut;
+
+function load(){
+  message('One moment','Loading your carnivals.');
+  Promise.all([sb.from('web_schools').select('name'),sb.from('web_links').select('carnival,sort,name,path_label,staff_url,event_date').order('sort')]).then(function(res){
+    if(res[0].error||res[1].error){
+      var s=(res[0].error||res[1].error).status||0;
+      if(s===401||s===403){signOut();return}
+      message('Not loaded','No connection. Reload the page to try again.',true);return}
+    if(!res[0].data.length){message('Not set up yet','This account is not linked to a school yet. Ask Online Carnivals to set it up.',true);return}
+    draw(res[0].data[0].name,res[1].data);
+  },function(){message('Not loaded','No connection. Reload the page to try again.',true)});
+}
+
+var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function when(d){if(!d)return null;var p=d.split('-'),t=new Date(+p[0],+p[1]-1,+p[2],8,0,0);
+  var s=DAYS[t.getDay()]+' '+t.getDate()+' '+MONTHS[t.getMonth()]+' '+t.getFullYear(),ms=t-new Date(),left;
+  if(ms<-864e5)left=null;else if(ms<0)left='Race day';else left=Math.floor(ms/864e5)+' days '+Math.floor(ms%864e5/36e5)+' h to go';
+  return {text:s,left:left}}
+
+function draw(school,links){
+  var org=$('org');org.innerHTML='';
+  $('lead').textContent='Pick your lane. Three carnivals, one start line. Staff run the day.';
+  var tk=[school],LN=['--l1','--l2','--l3'];
+  links=links.filter(function(L){return /^https:\/\//.test(L.staff_url||'')});
+  links.forEach(function(L,n){
+    var w=when(L.event_date);if(w)tk.push(L.name+': '+w.text);
+    var lane=el('article','lane');lane.style.setProperty('--c','var('+LN[n%3]+')');
+    var no=el('div','no',String(n+1));no.setAttribute('aria-hidden','true');lane.appendChild(no);
+    var nm=el('div','name');var h=el('h2',null,L.name);h.setAttribute('aria-label',L.name);nm.appendChild(h);
+    var p=el('p',null,L.path_label);if(w){p.appendChild(document.createTextNode('  ·  '+w.text));if(w.left){p.appendChild(document.createTextNode('  ·  '));p.appendChild(el('span','cd',w.left))}}
+    nm.appendChild(p);lane.appendChild(nm);
+    var cta=el('div','cta'),b=el('a','b s','Sign in');b.href=L.staff_url;b.setAttribute('aria-label',L.name+': sign in');
+    cta.appendChild(b);lane.appendChild(cta);
+    var dot=el('span','runner');dot.setAttribute('aria-hidden','true');lane.appendChild(dot);
+    var f=el('span','finish');f.setAttribute('aria-hidden','true');lane.appendChild(f);
+    org.appendChild(lane);
+  });
+  tk.push('Staff sign in with your job PIN');
+  $('tk').textContent=tk.join('  /  ')+'  /  ';
+  $('foot').textContent='Staff: sign in with your job PIN.';
+  show('org');effects();$('h1').focus({preventScroll:true});
+}
+
+/* Look effects from the landing page (Swim Opt 2.21, S1.47 B) */
+var C='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&';
 function sc(el){var t=el.dataset.t||(el.dataset.t=el.textContent),i=0;clearInterval(el._i);
-el._i=setInterval(function(){el.textContent=t.split('').map(function(c,k){return c===' '||k<i?c:C[Math.floor(Math.random()*C.length)]}).join('');
-if(i++>=t.length){clearInterval(el._i);el.textContent=t}},38)}
-document.querySelectorAll('.name h2').forEach(function(h,n){h.setAttribute('aria-label',h.textContent);
-setTimeout(function(){sc(h)},500+n*150);
-h.closest('.lane').addEventListener('pointerenter',function(){sc(h)});
-h.closest('.lane').addEventListener('focusin',function(){sc(h)})})}
-/* runner dot (S1.47 B): runs once as the page opens, and again when a lane is pointed at or focused */
-document.querySelectorAll('.lane').forEach(function(l){var f=document.createElement('span');f.className='finish';f.setAttribute('aria-hidden','true');l.appendChild(f)});
+  el._i=setInterval(function(){el.textContent=t.split('').map(function(c,k){return c===' '||k<i?c:C[Math.floor(Math.random()*C.length)]}).join('');
+  if(i++>=t.length){clearInterval(el._i);el.textContent=t}},38)}
 function run(lane,ms){if(rm||!lane.animate)return;var d=lane.querySelector('.runner'),f=lane.querySelector('.finish');
-  if(d._a)d._a.cancel();
-  /* positions in % of the lane, so a lane that changes width mid-run is still crossed at its line */
-  var dw=d.offsetWidth||18,T=ms+250;
+  if(d._a)d._a.cancel();var dw=d.offsetWidth||18,T=ms+250;
   d._a=d.animate([{left:'-30px',transform:'none',opacity:1},{left:'calc(100% - '+(10+dw/2)+'px)',transform:'none',opacity:1,offset:.82},{left:'calc(100% + 40px)',transform:'none',opacity:0}],
     {duration:T,easing:'cubic-bezier(.45,0,.75,.55)',fill:'forwards'});
   clearTimeout(f._t);f._t=setTimeout(function(){f.classList.add('flash');setTimeout(function(){f.classList.remove('flash')},500)},T*.79)}
-document.querySelectorAll('.lane').forEach(function(l,n){setTimeout(function(){run(l,1600)},n*120+200);
-  if(fine)l.addEventListener('pointerenter',function(){run(l,1400)});
-  l.addEventListener('focusin',function(){run(l,1400)})});
-t.onclick=function(){var l=r.getAttribute('data-theme')==='light';r.setAttribute('data-theme',l?'dark':'light');t.textContent=l?'Light':'Dark';t.setAttribute('aria-label',(l?'Light':'Dark')+' theme')};})();
+/* the sign-in panel gets the runner dot too (version 4): once as it opens, again when pointed at or focused */
+var gate=document.querySelector('.gate');
+function gateRun(ms,delay){setTimeout(function(){run(gate,ms)},delay||0)}
+if(fine)gate.addEventListener('pointerenter',function(){gateRun(1400)});
+gate.addEventListener('focusin',function(e){if(!gate.contains(e.relatedTarget))gateRun(1400)});
+function effects(){
+  if(fine&&!rm)document.querySelectorAll('.lane .b').forEach(function(b){
+    b.addEventListener('pointermove',function(ev){var q=b.getBoundingClientRect();
+    b.style.transform='translate('+((ev.clientX-q.left-q.width/2)*.18)+'px,'+((ev.clientY-q.top-q.height/2)*.28)+'px)'});
+    b.addEventListener('pointerleave',function(){b.style.transform=''})});
+  document.querySelectorAll('.lane').forEach(function(l,n){var h=l.querySelector('.name h2');
+    setTimeout(function(){run(l,1600)},n*120+200);
+    if(!rm)setTimeout(function(){sc(h)},500+n*150);
+    l.addEventListener('pointerenter',function(){if(fine)run(l,1400);if(!rm)sc(h)});
+    l.addEventListener('focusin',function(){run(l,1400);if(!rm)sc(h)})});
+}
+var t=$('t');
+t.onclick=function(){var l=r.getAttribute('data-theme')==='light';r.setAttribute('data-theme',l?'dark':'light');t.textContent=l?'Light':'Dark';t.setAttribute('aria-label',(l?'Light':'Dark')+' theme')};
+if(q.get('theme')==='light')t.onclick();
+
+if(TEST){start()}
+else{var s=document.createElement('script');s.src='js/supabase.js';s.onload=start;s.onerror=function(){message('Not loaded','No connection. Reload the page to try again.')};document.head.appendChild(s)}
+})();
 </script>
 </body>
 </html>
